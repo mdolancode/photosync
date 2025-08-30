@@ -1,0 +1,1 @@
+# PhotoSync – Local-first demo
