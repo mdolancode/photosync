@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import os
 
 @MainActor
 final class PhotoListViewModel: ObservableObject {
+    private let log = Logger(subsystem: "com.yourcompany.photosync", category: "viewmodel")
     @Published var items: [PhotoItem] = []
     
     private let local = LocalStore()
@@ -47,7 +49,7 @@ final class PhotoListViewModel: ObservableObject {
             await uploader.kick()
         } catch {
             // TODO: show error in UI
-            print("Failed to save photo: \(error)")
+            log.error("Failed to save photo: \(error.localizedDescription)")
         }
     }
 }

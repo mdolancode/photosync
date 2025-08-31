@@ -6,8 +6,10 @@
 //
 
 import Foundation
+import os
 
 actor UploadService {
+    private let log = Logger(subsystem: "com.matthewdolan.photosync", category: "uploader")
     private var items: [PhotoItem] = []
     private var onUpdate: (@Sendable ([PhotoItem]) -> Void)?
     
@@ -51,6 +53,7 @@ actor UploadService {
         } else {
             items[index].state = .failed
             items[index].attempts += 1
+            log.error("Upload failed for item \(self.items[index].id, privacy: .public), attempts: \(self.items[index].attempts)")
             notify()
             
             let delay = UInt64(min(4, Int(pow(2.0, Double(items[index].attempts))))) * 1_000_000_000
