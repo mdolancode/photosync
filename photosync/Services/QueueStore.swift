@@ -8,19 +8,19 @@
 import Foundation
 
 final class QueueStore {
-    private let url: URL = {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return docs.appendingPathComponent("queue.json")
+    private let queueFileURL: URL = {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent("queue.json")
     }()
     
     func load() -> [PhotoItem] {
-        guard let data = try? Data(contentsOf: url) else { return [] }
+        guard let data = try? Data(contentsOf: queueFileURL) else { return [] }
         return (try? JSONDecoder().decode([PhotoItem].self, from: data)) ?? []
     }
     
     func save(_ items: [PhotoItem]) {
         guard let data = try? JSONEncoder().encode(items) else { return }
-        try? data.write(to: url, options: [.atomic])
+        try? data.write(to: queueFileURL, options: [.atomic])
     }
 }
 
