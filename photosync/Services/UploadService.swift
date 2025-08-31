@@ -16,9 +16,9 @@ actor UploadService {
     private let baseUploadDelayNanoseconds: UInt64 = 700_000_000
     
     private var photoItems: [PhotoItem] = []
-    private var onUpdate: (@Sendable ([PhotoItem]) -> Void)?
+    private var onUpdate: (@MainActor @Sendable ([PhotoItem]) -> Void)?
     
-    func setOnUpdate(_ handler: @escaping @Sendable ([PhotoItem]) -> Void) {
+    func setOnUpdate(_ handler: @MainActor @escaping @Sendable ([PhotoItem]) -> Void) {
         self.onUpdate = handler
     }
     
