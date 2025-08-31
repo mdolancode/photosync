@@ -8,16 +8,20 @@
 import Foundation
 
 struct LocalStore {
-    func dir() throws -> URL {
-        let base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        let d = base.appendingPathComponent("Photos", isDirectory: true)
-        try FileManager.default.createDirectory(at: d, withIntermediateDirectories: true)
-        return d
+    func makePhotosDirectory() throws -> URL {
+        let appSupportDirectory = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true)
+        let photosDirectoryURL = appSupportDirectory.appendingPathComponent("Photos", isDirectory: true)
+        try FileManager.default.createDirectory(at: photosDirectoryURL, withIntermediateDirectories: true)
+        return photosDirectoryURL
     }
     
     func saveJPEGAtomically(_ data: Data, id: UUID) throws -> URL {
-        let url = try dir().appendingPathComponent("\(id.uuidString).jpg")
-        try data.write(to: url, options: [.atomic])
-        return url
+        let photoFileURL = try makePhotosDirectory().appendingPathComponent("\(id.uuidString).jpg")
+        try data.write(to: photoFileURL, options: [.atomic])
+        return photoFileURL
     }
 }
