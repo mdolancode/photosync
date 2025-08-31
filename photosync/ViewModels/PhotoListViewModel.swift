@@ -10,43 +10,46 @@ import os
 
 @MainActor
 final class PhotoListViewModel: ObservableObject {
-    private let log = Logger(subsystem: "com.yourcompany.photosync", category: "viewmodel")
-    @Published var items: [PhotoItem] = []
+    private let log = Logger(subsystem: "com.matthewdolan.photosync", category: "viewmodel")
     
-    private let local = LocalStore()
-    private let queue = QueueStore()
-    private let uploader = UploadService()
+    @Published var photoItems: [PhotoItem] = []
+    
+    private let localStore = LocalStore()
+    private let queueStore = QueueStore()
+    private let uploadService = UploadService()
     
     init() {
-        items = queue.load()
+        photoItems = queueStore.load()
         
         Task {
-            await uploader.setOnUpdate { [weak self] updated in
-                Task { @MainActor in
+            await uploadService.setOnUpdate { [weak self] updatedItems in
                     guard let self else { return }
-                    self.items = updated
-                    self.queue.save(updated)
-                }
+                    self.photoItems = updatedItems
+                    self.queueStore.save(updatedItems)
+             
             }
-                await uploader.set(items)
-                await uploader.kick()
+                await uploadService.set(photoItems)
+                await uploadService.kick()
         }
     }
     
     func addPhoto(data: Data) async {
         do {
             let id = UUID()
-            let url = try local.saveJPEGAtomically(data, id: id)
-            let newItem = PhotoItem(id: id,
-                                    localPath: url.path,
-                                    createdAt: .now,
-                                    state: .pending,
-                                    attempts: 0,
-                                    lastError: nil)
-            items.insert(newItem, at: 0)
-            queue.save(items)
-            await uploader.set(items)
-            await uploader.kick()
+            let photoFileURL = try localStore.saveJPEGAtomically(data, id: id)
+            
+            let newItem = PhotoItem(
+                id: id,
+                localPath: photoFileURL.path,
+                createdAt: .now,
+                state: .pending,
+                attempts: 0,
+                lastError: nil
+            )
+            photoItems.insert(newItem, at: 0)
+            queueStore.save(photoItems)
+            await uploadService.set(photoItems)
+            await uploadService.kick()
         } catch {
             // TODO: show error in UI
             log.error("Failed to save photo: \(error.localizedDescription)")
