@@ -9,13 +9,13 @@ import SwiftUI
 import PhotosUI
 
 struct PhotoListView: View {
-    @StateObject private var vm = PhotoListViewModel()
+    @StateObject private var viewModel = PhotoListViewModel()
     @State private var pickedItem: PhotosPickerItem?
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
-                ForEach(vm.items) { item in
+                ForEach(viewModel.photoItems) { item in
                     PhotoRow(item: item)
                 }
             }
@@ -31,7 +31,7 @@ struct PhotoListView: View {
             Task {
                 
                 if let data = try? await newValue.loadTransferable(type: Data.self) {
-                    await vm.addPhoto(data: data)
+                    await viewModel.addPhoto(data: data)
                 }
                 pickedItem = nil
             }
@@ -50,15 +50,15 @@ private struct PhotoRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Thumb(path: item.localPath)
+            PhotoThumbnail(path: item.localPath)
             VStack(alignment: .leading, spacing: 4) {
                 Text(shortId)
                     .font(.subheadline)
                     .foregroundStyle(.primary)
                 HStack(spacing: 8) {
-                    StatusChip(state: item.state)
-                    if item.attempts > 0 && item.state != .uploaded {
-                        Text("tries: \(item.attempts)")
+                    StatusChip(state: item.uploadState)
+                    if item.retryAttempts > 0 && item.uploadState != .uploaded {
+                        Text("tries: \(item.retryAttempts)")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -70,7 +70,7 @@ private struct PhotoRow: View {
     }
 }
 
-private struct Thumb: View {
+private struct PhotoThumbnail: View {
     let path: String
     var body: some View {
         Group {
@@ -83,7 +83,7 @@ private struct Thumb: View {
                     .overlay(Image(systemName: "photo"))
             }
         }
-        .frame(width:56, height: 56)
+        .frame(width: 56, height: 56)
         .clipped()
         .cornerRadius(8)
         .opacity(0.95)
@@ -91,7 +91,7 @@ private struct Thumb: View {
 }
 
 private struct StatusChip: View {
-    let state: PhotoItem.State
+    let state: PhotoItem.UploadState
     var text: String {
         switch state {
         case .pending: return "Pending"
@@ -106,12 +106,16 @@ private struct StatusChip: View {
             .bold()
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
+            .foregroundStyle(foreground)
             .background(
-                Capsule().fill(background)
-                    .overlay(Capsule().strokeBorder(border, lineWidth: 0.5)
-                            )
-                    .foregroundStyle(foreground))
+                Capsule()
+                    .fill(background)
+                    .overlay(
+                        Capsule().strokeBorder(border, lineWidth: 0.5)
+                    )
+                )
     }
+                
     private var background: Color {
         switch state {
         case .pending: return .yellow.opacity(0.18)
@@ -120,6 +124,7 @@ private struct StatusChip: View {
         case .failed: return .red.opacity(0.18)
         }
     }
+                
     private var border: Color {
         switch state {
         case .pending: return .yellow.opacity(0.5)
@@ -128,6 +133,7 @@ private struct StatusChip: View {
         case .failed: return .red.opacity(0.5)
         }
     }
+                
     private var foreground: Color {
         switch state {
         case .pending: return .yellow
