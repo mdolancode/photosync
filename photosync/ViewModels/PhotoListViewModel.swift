@@ -42,9 +42,9 @@ final class PhotoListViewModel: ObservableObject {
                 id: id,
                 localPath: photoFileURL.path,
                 createdAt: .now,
-                state: .pending,
-                attempts: 0,
-                lastError: nil
+                uploadState: .pending,
+                retryAttempts: 0,
+                lastErrorMessage: nil
             )
             photoItems.insert(newItem, at: 0)
             queueStore.save(photoItems)

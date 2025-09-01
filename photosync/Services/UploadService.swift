@@ -37,7 +37,7 @@ actor UploadService {
     func kick() async {
         let indices = Array(photoItems.indices)
         for index in indices
-        where photoItems[index].state == .pending || photoItems[index].state == .failed {
+        where photoItems[index].uploadState == .pending || photoItems[index].uploadState == .failed {
             await upload(index: index)
         }
         notify()
@@ -46,26 +46,26 @@ actor UploadService {
     private func upload(index: Int) async {
         guard photoItems.indices.contains(index) else { return }
         
-        photoItems[index].state = .uploading
+        photoItems[index].uploadState = .uploading
         notify()
         
         try? await Task.sleep(nanoseconds: 700_000_000)
         let success = Int.random(in: 0..<100) < 75
         
         if success {
-            photoItems[index].state = .uploaded
-            photoItems[index].lastError = nil
+            photoItems[index].uploadState = .uploaded
+            photoItems[index].lastErrorMessage = nil
             notify()
             return
         }
         
-        photoItems[index].state = .failed
-        photoItems[index].attempts += 1
+        photoItems[index].uploadState = .failed
+        photoItems[index].retryAttempts += 1
         let itemId = photoItems[index].id
-        log.error("Upload failed for item \(self.photoItems[index].id, privacy: .public), attempts: \(self.photoItems[index].attempts)")
+        log.error("Upload failed for item \(self.photoItems[index].id, privacy: .public), attempts: \(self.photoItems[index].retryAttempts)")
         notify()
         
-        let attempts = photoItems[index].attempts
+        let attempts = photoItems[index].retryAttempts
         let seconds = min(maxBackoffDelaySeconds, UInt64(1 << min(attempts, 30)))
         let delayNanoseconds = seconds * 1_000_000_000
      
@@ -77,7 +77,7 @@ actor UploadService {
     }
     private func retryUpload(for id: UUID) async {
         guard let index = photoItems.firstIndex(where: { $0.id == id }) else { return }
-        guard photoItems[index].state == .failed || photoItems[index].state == .pending else { return }
+        guard photoItems[index].uploadState == .failed || photoItems[index].uploadState == .pending else { return }
         await upload(index: index)
     }
 }

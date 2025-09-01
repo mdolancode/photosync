@@ -11,11 +11,11 @@ struct PhotoItem: Identifiable, Codable, Hashable {
     let id: UUID
     let localPath: String
     let createdAt: Date
-    var state: State
-    var attempts: Int
-    var lastError: String?
+    var uploadState: UploadState
+    var retryAttempts: Int
+    var lastErrorMessage: String?
     
-    enum State: String, Codable {
+    enum UploadState: String, Codable {
         case pending
         case uploading
         case uploaded
