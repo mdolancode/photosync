@@ -58,7 +58,7 @@ private struct PhotoRow: View {
                     .font(.subheadline)
                     .foregroundStyle(.primary)
                 HStack(spacing: 8) {
-                    StatusChip(state: item.uploadState)
+                    StatusLabel(state: item.uploadState)
                     if item.retryAttempts > 0 && item.uploadState != .uploaded {
                         Text("tries: \(item.retryAttempts)")
                             .font(.caption2)
@@ -92,7 +92,7 @@ private struct PhotoThumbnail: View {
     }
 }
 
-private struct StatusChip: View {
+private struct StatusLabel: View {
     let state: PhotoItem.UploadState
     var text: String {
         switch state {
