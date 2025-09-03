@@ -8,11 +8,13 @@
 import Foundation
 
 final class QueueStore {
+    // MARK: - Properties
     private let queueFileURL: URL = {
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return documentsDirectory.appendingPathComponent("queue.json")
     }()
     
+    // MARK: - Public API
     func load() -> [PhotoItem] {
         guard let data = try? Data(contentsOf: queueFileURL) else { return [] }
         return (try? JSONDecoder().decode([PhotoItem].self, from: data)) ?? []

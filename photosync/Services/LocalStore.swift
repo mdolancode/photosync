@@ -8,6 +8,7 @@
 import Foundation
 
 struct LocalStore {
+    // MARK: - Directory Management
     func makePhotosDirectory() throws -> URL {
         let appSupportDirectory = try FileManager.default.url(
             for: .applicationSupportDirectory,
@@ -19,6 +20,7 @@ struct LocalStore {
         return photosDirectoryURL
     }
     
+    // MARK: - Public API
     func saveJPEGAtomically(_ data: Data, id: UUID) throws -> URL {
         let photoFileURL = try makePhotosDirectory().appendingPathComponent("\(id.uuidString).jpg")
         try data.write(to: photoFileURL, options: [.atomic])

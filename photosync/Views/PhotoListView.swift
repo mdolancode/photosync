@@ -12,6 +12,7 @@ struct PhotoListView: View {
     @StateObject private var viewModel = PhotoListViewModel()
     @State private var pickedItem: PhotosPickerItem?
     
+    // MARK: - Body
     var body: some View {
         NavigationStack {
             List {
@@ -40,6 +41,7 @@ struct PhotoListView: View {
     }
 }
 
+// MARK: - Subviews
 private struct PhotoRow: View {
     let item: PhotoItem
 
@@ -115,7 +117,8 @@ private struct StatusChip: View {
                     )
                 )
     }
-                
+    
+    // MARK: - Styles
     private var background: Color {
         switch state {
         case .pending: return .yellow.opacity(0.18)

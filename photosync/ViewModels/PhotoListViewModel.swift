@@ -12,12 +12,14 @@ import os
 final class PhotoListViewModel: ObservableObject {
     private let log = Logger(subsystem: "com.matthewdolan.photosync", category: "viewmodel")
     
+    // MARK: - Properties
     @Published var photoItems: [PhotoItem] = []
     
     private let localStore = LocalStore()
     private let queueStore = QueueStore()
     private let uploadService = UploadService()
     
+    // MARK: - Init
     init() {
         photoItems = queueStore.load()
         
@@ -33,6 +35,7 @@ final class PhotoListViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Public API
     func addPhoto(data: Data) async {
         do {
             let id = UUID()
@@ -55,4 +58,6 @@ final class PhotoListViewModel: ObservableObject {
             log.error("Failed to save photo: \(error.localizedDescription)")
         }
     }
+    
+    // MARK: - Private Helpers
 }

@@ -8,6 +8,7 @@
 import Foundation
 
 struct PhotoItem: Identifiable, Codable, Hashable {
+    // MARK: Model Properties
     let id: UUID
     let localPath: String
     let createdAt: Date
@@ -15,6 +16,7 @@ struct PhotoItem: Identifiable, Codable, Hashable {
     var retryAttempts: Int
     var lastErrorMessage: String?
     
+    // MARK: - State
     enum UploadState: String, Codable {
         case pending
         case uploading

@@ -11,10 +11,12 @@ import os
 actor UploadService {
     private let log = Logger(subsystem: "com.matthewdolan.photosync", category: "uploader")
     
+    // MARK: - Dependencies & Tunables
     private let successRatePercent = 75
     private let maxBackoffDelaySeconds: UInt64 = 4
     private let baseUploadDelayNanoseconds: UInt64 = 700_000_000
     
+    // MARK: - Public API
     private var photoItems: [PhotoItem] = []
     private var onUpdate: (@MainActor @Sendable ([PhotoItem]) -> Void)?
     
@@ -27,13 +29,6 @@ actor UploadService {
         notify()
     }
     
-    private func notify() {
-        guard let updateHandler = onUpdate else { return }
-        Task { @MainActor [photoItems] in
-            updateHandler(photoItems)
-        }
-    }
-    
     func kick() async {
         let indices = Array(photoItems.indices)
         for index in indices
@@ -43,6 +38,15 @@ actor UploadService {
         notify()
     }
     
+    // MARK: - Notifications
+    private func notify() {
+        guard let updateHandler = onUpdate else { return }
+        Task { @MainActor [photoItems] in
+            updateHandler(photoItems)
+        }
+    }
+    
+    // MARK: - Orchestration
     private func upload(index: Int) async {
         guard photoItems.indices.contains(index) else { return }
         
@@ -75,6 +79,8 @@ actor UploadService {
         }
         
     }
+    
+    // MARK: - Private Helpers
     private func retryUpload(for id: UUID) async {
         guard let index = photoItems.firstIndex(where: { $0.id == id }) else { return }
         guard photoItems[index].uploadState == .failed || photoItems[index].uploadState == .pending else { return }
